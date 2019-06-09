@@ -1,7 +1,7 @@
 <template>
-	<header>
+	<b-container>
 		<b-nav>
-			
+			Carl Chilton - NETSELLS Technical Test
 		</b-nav>
-	</header>
+	</b-container>
 </template>
