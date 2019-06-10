@@ -5,40 +5,45 @@ export default [
             name: "first_name",            
             label: "First name",
             type: "text", 
-            attributes: "required",
-            pattern: "[A-Za-z]"
+            required: true,
+            pattern: "[A-Za-z]{1-15}",
+            dataTarget: "first_name"
         }, 
         {
             element: "input",
             name: "last_name",
             label: "Last name",
             type: "text", 
-            attributes: "",
-            pattern: "[A-Za-z]"
+            required: false,
+            pattern: "[A-Za-z]{1-15}",
+            dataTarget: "last_name"
         }, 
         {
             element: "input",
             name: "email",
             label: "Email",
             type: "email",
-            attributes: "required",
-            pattern: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$"
+            required: true,
+            pattern: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$",
+            dataTarget: "email"
         },
         {
             element: "input",
             name: "phone_number",
             label: "Phone number",
             type: "number",
-            attributes: "",
-            pattern: ""
+            required: false,
+            pattern: "",
+            dataTarget: "phone_number"
         },
         {
             element: "input",
             name: "live_in_uk",
             label: "Do you live in the uk?",
             type: "checkbox",
-            attributes: "required",
-            pattern: ""
+            required: true,
+            pattern: "",
+            dataTarget: "live_in_uk"
         }
     ],
     [
@@ -46,9 +51,10 @@ export default [
             element: "input",
             name: "git_profile",
             label: "Git profile",
-            type: "text", 
-            attributes: "required",
-            pattern: ""
+            type: "search", 
+            required: true,
+            pattern: "[A-Za-z]{1-15}",
+            dataTarget: "git_profile"
         } 
     ],
     [
@@ -57,7 +63,7 @@ export default [
             name: "cv",
             label: "Upload CV",
             type: "file", 
-            attributes: "required",
+            required: true,
             pattern: ""
         },
         {
@@ -65,7 +71,7 @@ export default [
             name: "cover_letter",
             label: "Upload Cover Letter",
             type: "file", 
-            attributes: "",
+            required: false,
             pattern: ""
         }
     ],
@@ -75,8 +81,9 @@ export default [
             name: "about_you",
             label: "About you",
             type: "text", 
-            attributes: "required",
-            pattern: ""
+            required: true,
+            pattern: "",
+            dataTarget: "about_you"
         }
     ],
 ]
