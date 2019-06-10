@@ -35,7 +35,7 @@ export default [
             required: false,
             pattern: "",
             dataTarget: "phone_number"
-        },
+        },        
         {
             element: "input",
             name: "live_in_uk",
@@ -82,7 +82,7 @@ export default [
             label: "About you",
             type: "text", 
             required: true,
-            pattern: "",
+            pattern: "[A-Za-z]{1-15}",
             dataTarget: "about_you"
         }
     ],

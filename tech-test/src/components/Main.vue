@@ -6,20 +6,37 @@
 					<form 
 						@submit.prevent="nextPage()" v-for="(page, index) in formFields" :class="pagePosition(index)" class="page">
 
-						<b-input-group v-if="input.name !== 'git_profile'" v-for="input in page">
-							<input v-model="submittedData[input.name]" :name="input.name" :type="input.type" :required="input.required" class="form-control" :placeholder="input.label" :pattern="input.pattern" /> 
-						</b-input-group>
+						<b-input-group v-for="input in page">
+							<input 
+								@keyup="input.name === 'git_profile' ? searchGithub($event) : ''" 
+								v-model="submittedData[input.name]" 
+								:name="input.name" 
+								:type="input.type" 
+								:required="input.required" 
+								class="form-control" 
+								:placeholder="input.label" 
+								:pattern="input.pattern" /> 
+						</b-input-group>						
 
+						<div id="githubResults" v-for="input in page" v-if="input.name === 'git_profile'">
+							<div v-for="result in githubResponse" class="row github-hit">
+								<b-col sm="2">
+									<img class="github-avatar" :src="result.avatar_url"/>
+								</b-col>
+								<b-col sm="10">
+									<div class="login-name">{{ result.login }}</div>
+									<div class="html-url">{{ result.html_url }}</div>
+								</b-col>
+							</div>						
+						</div>
+				
 						
-
-						<button @click.prevent="prevPage()" class="btn btn-info prev-button">Back</button>
-						<button type="submit" class="btn btn-success next-button">Next</button>			
-
-						
-
-					</form>
-
+						<button v-show="index !== 0" @click.prevent="prevPage()" class="btn btn-info prev-button">Back</button>
+						<button type="submit" class="btn btn-success next-button">Next</button>
+					</form>					
 				</div>
+				<br/>
+				
           	</b-row>
         </b-container>  
     </section>
@@ -27,10 +44,9 @@
 
 <script>
 	import formFields from "@/data/form-fields"
+	import axios from "axios"
+
 	export default {
-		props: {
-			
-		},
 		data() {
 			return {
 				formFields,
@@ -44,8 +60,10 @@
 					git_profile: "",
 					cv: "",
 					cover_letter: "",
-					about_you: ""	
-				}
+					about_you: "",
+				},
+				apiProtect: null,
+				githubResponse: {}
 			}
 		},	 
  		methods: {
@@ -61,7 +79,6 @@
 				return pageClass
  			},
     		nextPage() {
-    			console.log(this.submittedData)
       			if (this.currentPage < formFields.length - 1) {
       				this.currentPage++	
       			}    
@@ -71,13 +88,25 @@
         			this.currentPage--
       			}   
     		},
-    		
+    		searchGithub(searchTerm) {
+    			var self = this
+    			clearTimeout(this.apiProtect)
+    			self.githubResponse = []
+       			this.apiProtect = setTimeout(function() {    				
+    				axios.get('https://api.github.com/search/users?q=' + searchTerm.target.value)
+    					.then(response => {    						
+    						self.githubResponse = response.data.items
+    						console.log(self.githubResponse)
+    					})
+    			}, 2000)
+   			
+    		}
 		}
 	}
 </script>
 
 <style scoped>
-	
+
 	.form-container {
 		border: solid 2px grey;
 		border-radius: 10px;
@@ -129,5 +158,36 @@
 		right: 0;
 		bottom: 25px;
 		z-index: 1;
+	}
+
+	.github-avatar {
+		width: 100%;
+		border-radius: 50%;
+		box-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+	}
+
+	.login-name {
+		text-align: left;
+		font-weight: bold;
+	}
+	.html-url {
+		font-size: 12px;
+		text-align: left;
+	}
+	.github-hit {
+		padding: 10px;
+		border-bottom: solid 1px lightgrey;
+		cursor: pointer;
+		transition: background-color 0.4s ease-out;
+	}
+	.github-hit:hover {
+		background-color: lightblue;
+	}
+	#githubResults {
+		overflow-y: scroll;
+		overflow-x: hidden;
+		height: calc(100% - 140px);
+		margin-top: 20px;
+		border: solid 2px grey;
 	}
 </style>
