@@ -1,12 +1,13 @@
 export default [
 	[   
+    
         {
             element: "input",
             name: "first_name",            
             label: "First name",
             type: "text", 
             required: true,
-            pattern: "[A-Za-z]{1-15}",
+            pattern: "[A-Za-z ]+",
             dataTarget: "first_name"
         }, 
         {
@@ -15,7 +16,7 @@ export default [
             label: "Last name",
             type: "text", 
             required: false,
-            pattern: "[A-Za-z]{1-15}",
+            pattern: "[A-Za-z ]+",
             dataTarget: "last_name"
         }, 
         {
@@ -33,7 +34,7 @@ export default [
             label: "Phone number",
             type: "number",
             required: false,
-            pattern: "",
+            pattern: "^[0-9]",
             dataTarget: "phone_number"
         },        
         {
@@ -42,7 +43,6 @@ export default [
             label: "Do you live in the uk?",
             type: "checkbox",
             required: true,
-            pattern: "",
             dataTarget: "live_in_uk"
         }
     ],
@@ -52,8 +52,7 @@ export default [
             name: "git_profile",
             label: "Git profile",
             type: "search", 
-            required: false,
-            pattern: "[A-Za-z]{1-15}",
+            required: false,            
             dataTarget: "git_profile"
         } 
     ],
@@ -64,7 +63,6 @@ export default [
             label: "Upload CV",
             type: "file", 
             required: true,
-            pattern: ""
         },
         {
             element: "input",
@@ -72,7 +70,6 @@ export default [
             label: "Upload Cover Letter",
             type: "file", 
             required: false,
-            pattern: ""
         }
     ],
     [
@@ -82,8 +79,18 @@ export default [
             label: "About you",
             type: "text", 
             required: true,
-            pattern: "[A-Za-z]{1-15}",
             dataTarget: "about_you"
         }
     ],
+    [
+        {
+            element: "div", 
+            name: "summary", 
+            label: "summary", 
+            type: "text", 
+            required: false,
+            dataTarget: "" 
+
+        }
+    ]
 ]

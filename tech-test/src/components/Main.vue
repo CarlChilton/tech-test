@@ -8,15 +8,28 @@
 
 						<b-input-group v-for="input in page">
 							<input 
+								v-show="input.name !== 'summary'"
 								@keyup="input.name === 'git_profile' ? searchGithub($event) : ''" 
-								v-model="input.name !== 'git_profile' ? submittedData[input.name] : github.searchTerm"  
+								v-model="submittedData[input.name]"  
 								:name="input.name" 
 								:type="input.type" 
 								:required="input.required" 
 								class="form-control" 
 								:placeholder="input.label" 
-								:pattern="input.pattern" /> 
-						</b-input-group>						
+								:pattern="input.pattern" /> 	
+
+							<div v-show="input.name === 'summary'">
+								<div>Name: {{ submittedData.first_name }} {{ submittedData.last_name }}</div>
+								<div>Email: {{ submittedData.email }}</div>
+								<div>Phone: {{ submittedData.phone_number }}</div>
+								<div>Live in the uk: {{ submittedData.live_in_uk }}</div>
+								<div>Git Profile: {{ submittedData.git_profile }}</div>
+								<div>CV attached: {{ submittedData.cv }}</div>
+								<div>Cover letter attached: {{ submittedData.cover_letter }}</div>
+								<div>About you: {{ submittedData.about_you }}</div>
+							</div>					
+						</b-input-group>		
+
 
 						<div id="githubResults" v-for="input in page" 
 							v-if="input.name === 'git_profile'">
@@ -34,18 +47,21 @@
 								<span v-if="github.response.length === 0 && github.searchTerm === ''">
 									Please use the search box to find your profile by typing in your username
 								</span>
-								<span v-if="github.response.length === 0 && github.searchTerm !== ''">
+								<span v-else-if="github.response.length === 0 && github.searchTerm !== ''">
 									Unfortunately, the username specified did not return any results
 								</span>
+								<
 							</div>			
-							<div class="please-wait" v-show="github.searching === true" :transition="fade">
+							<div class="please-wait" v-show="github.searching === true">
 								<i class="rotate fas fa-spinner"></i>
 								<br/>
 								<span>SEARCHING</span>
 							</div>
-						</div>
+						</div>	
+
 						<button v-show="github.selectedId !== null || formFields[index][0].name !== 'git_profile'" type="submit" class="btn btn-success next-button">
-							<i class="fas fa-chevron-right"></i>
+							<i v-if="formFields[index][0].name !== 'summary'" class="fas fa-chevron-right"></i>
+							<div v-else>FINISH</div>
 						</button>
 						<button v-show="index !== 0" @click.prevent="prevPage()" class="btn btn-info prev-button">
 							<i class="fas fa-chevron-left"></i>
@@ -53,8 +69,7 @@
 						
 					</form>					
 				</div>
-				<br/>
-				
+				<br/>				
           	</b-row>
         </b-container>  
     </section>
@@ -89,7 +104,7 @@
 				
 				
 			}
-		},	 
+		},		
  		methods: {
  			pagePosition(index) {
  				let pageClass = ''
@@ -115,14 +130,14 @@
     		searchGithub(searchTerm) {
     			var self = this
     			clearTimeout(this.github.apiProtect)
-    			if (this.github.searchTerm !== "") {
+    			if (searchTerm.target.value !== "") {
     				this.github.searching = true	
     			} else {
     				this.github.searching = false	
     			}
     			self.github.response = []
        			this.github.apiProtect = setTimeout(function() {    				
-    				axios.get('https://api.github.com/search/users?q=' + self.github.searchTerm)
+    				axios.get('https://api.github.com/search/users?q=' + searchTerm.target.value)
     					.then(response => {    						
     						self.github.response = response.data.items
     						self.github.searching = false    						
@@ -133,23 +148,6 @@
     			this.github.selectedId = id
     			this.submittedData.git_profile = url
     		}
-		},
-		module: {
-		    loaders: [
-		      	{
-		        	test: /\.vue$/,
-		        	loader: 'vue'
-		      	}, 
-		      	{
-		        	test: /\.s[a|c]ss$/,
-		          	loader: 'style!css!sass'
-		      	}
-		    ]
-		},
-		vue: {
-		    loaders: {
-			    scss: 'style!css!sass'
-		    }
 		}
 	}
 </script>
