@@ -1,5 +1,5 @@
 export default [
-	[
+	[   
         {
             element: "input",
             name: "first_name",            
@@ -52,12 +52,12 @@ export default [
             name: "git_profile",
             label: "Git profile",
             type: "search", 
-            required: true,
+            required: false,
             pattern: "[A-Za-z]{1-15}",
             dataTarget: "git_profile"
         } 
     ],
-    [
+    [   
         {
             element: "input",
             name: "cv",
