@@ -4,22 +4,23 @@
           	<b-row>
 				<div class="form-container">
 					<form 
-						@submit.prevent="nextPage()" v-for="(page, index) in formFields" :class="pagePosition(index)" class="page">
+						@submit.prevent="nextPage()" v-for="(page, index) in formFields" :class="pagePosition(index)" class="page">						
+						<div class="page-title">{{ page.title }}</div>
+						<div class="page-description">{{ page.description }}</div>
 
-						<b-input-group v-for="input in page">
+						<b-input-group v-for="input in page.data">
 							<input 
-								v-show="input.name !== 'summary'"
-								@keyup="input.name === 'git_profile' ? searchGithub($event) : ''" 
+								v-show="page.name !== 'summary'"
+								@keyup="page.name === 'git_profile' ? searchGithub($event) : ''" 
 								v-model="submittedData[input.name]"  
 								:name="input.name" 
 								:type="input.type" 
 								:required="input.required" 
-								class="form-control" 
+								class="form-control tech-input" 
 								:placeholder="input.label" 
 								:pattern="input.pattern"
 								:title="input.title" /> 	
-
-							<div v-show="input.name === 'summary'">
+							<div v-show="page.name === 'summary'">
 								<div>Name: {{ submittedData.first_name }} {{ submittedData.last_name }}</div>
 								<div>Email: {{ submittedData.email }}</div>
 								<div>Phone: {{ submittedData.phone_number }}</div>
@@ -30,9 +31,8 @@
 								<div>About you: {{ submittedData.about_you }}</div>
 							</div>					
 						</b-input-group>		
-
-						<div id="githubResults" v-for="input in page" 
-							v-if="input.name === 'git_profile'">
+						
+						<div id="githubResults" v-if="page.name === 'git_profile'">
 							<div v-for="result in github.response" class="row github-hit" @click="saveGithubProfile(result.id, result.html_url)"
 								:class="github.selectedId === result.id ? 'selected' : ''">
 								<b-col sm="2">
@@ -42,15 +42,15 @@
 									<div class="login-name">{{ result.login }}</div>
 									<div class="html-url">{{ result.html_url }}</div>
 								</b-col>
-							</div>			
-							<div class="searchMessage" v-if="github.response.length === 0 && github.searching === false">
-								<span v-if="github.response.length === 0 && github.searchTerm === ''">
-									Please use the search box to find your profile by typing in your username
-								</span>
-								<span v-else-if="github.response.length === 0 && github.searchTerm !== ''">
+							</div>
+							<div class="searchMessage" v-show="github.searching === false && github.showValidationError === false">
+								<span v-if="github.response.length === 0 && github.searchTerm !== ''">
 									Unfortunately, the username specified did not return any results
 								</span>
-								<
+								<span v-else-if="github.searchTerm === ''">
+									Please use the search box to find your profile by typing in your username	
+								</span>
+																
 							</div>			
 							<div class="please-wait" v-show="github.searching === true">
 								<i class="rotate fas fa-spinner"></i>
@@ -63,14 +63,26 @@
 							</div>
 						</div>	
 
-						<button type="submit" class="btn btn-success next-button">
-							<i v-if="formFields[index][0].name !== 'summary'" class="fas fa-chevron-right"></i>
+						<button type="submit" class="btn btn-success next-button" @click="page.name === 'summary' ? submitData() : ''">
+							<i v-if="page.name !== 'summary'" class="fas fa-chevron-right"></i>
 							<div v-else>FINISH</div>
 						</button>
 						<button v-show="index !== 0" @click.prevent="prevPage()" class="btn btn-info prev-button">
 							<i class="fas fa-chevron-left"></i>
-						</button>						
-					</form>					
+						</button>		
+
+					</form>			
+					<div id="final" v-show="finished">
+						<div class="finalMessage" v-show="finalise.dataSending">
+							<i class="rotate fas fa-spinner"></i>
+							<span>THANK YOU!</span>						
+							<span>Please wait while your information is submitted</span>
+						</div>
+						<div class="finalMessage" v-show="finalise.dataSubmitted">
+							<span>{{ response.message }}</span>
+							<span>{{ response.description }}</span>
+						</div>
+					</div>
 				</div>
 				<br/>				
           	</b-row>
@@ -86,6 +98,7 @@ export default {
 	data() {
 		return {
 			formFields,
+			dataReady: false,
 			currentPage: 0,
 			submittedData: {
 				first_name: "",
@@ -105,9 +118,21 @@ export default {
 				selectedId: null,
 				searching: false,
 				showValidationError: false
-			},			
+			},		
+			finished: false	,
+			finalise: {
+				dataSending: false,
+				dataSubmitted: false
+			},
+			response: {
+				message: '',
+				description: ''
+			}
 		}
 	},		
+	mounted() {
+		this.dataReady = true
+	},
 	methods: {
 		pagePosition(index) {
 			let pageClass = ''
@@ -121,7 +146,7 @@ export default {
 			return pageClass
 		},
 		nextPage() {
-			if (this.github.selectedId === null && formFields[this.currentPage][0].name === 'git_profile') {
+			if (this.github.selectedId === null && formFields[this.currentPage].name === 'git_profile') {
 				this.github.showValidationError = true
 			} else if (this.currentPage < formFields.length - 1) {
 				this.currentPage++	
@@ -135,6 +160,8 @@ export default {
 		searchGithub(searchTerm) {
 			var self = this
 			clearTimeout(this.github.apiProtect)
+			this.github.showValidationError = false
+			this.github.searchTerm = searchTerm.target.value 
 			if (searchTerm.target.value !== "") {
 				this.github.searching = true	
 			} else {
@@ -153,9 +180,11 @@ export default {
 			this.github.selectedId = id
 			this.submittedData.git_profile = url
 		},
-		hideGithubError() {
-			console.log("GOT hERE")
-			this.github.showValidationError=false
+	
+		submitData() {
+			this.finished = true
+			this.finalise.dataSending = true
+			
 		}
 	}
 }
@@ -163,6 +192,24 @@ export default {
 
 <style scoped>
 	
+	#final {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		z-index: 3;
+		border-radius: 5px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: rgba(255,255,255,0.7);
+	}
+	.finalMessage {
+		flex-direction: column;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-direction: column;
+	}
 	.searchMessage {
 		padding: 20px;
 	}
