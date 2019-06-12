@@ -53,7 +53,8 @@ export default [
             label: "Git profile",
             type: "search", 
             required: false,            
-            dataTarget: "git_profile"
+            dataTarget: "git_profile",
+            title: "Please search for and select your github profile before continuing"
         } 
     ],
     [   

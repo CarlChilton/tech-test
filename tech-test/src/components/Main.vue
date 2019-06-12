@@ -16,7 +16,8 @@
 								:required="input.required" 
 								class="form-control" 
 								:placeholder="input.label" 
-								:pattern="input.pattern" /> 	
+								:pattern="input.pattern"
+								:title="input.title" /> 	
 
 							<div v-show="input.name === 'summary'">
 								<div>Name: {{ submittedData.first_name }} {{ submittedData.last_name }}</div>
@@ -29,7 +30,6 @@
 								<div>About you: {{ submittedData.about_you }}</div>
 							</div>					
 						</b-input-group>		
-
 
 						<div id="githubResults" v-for="input in page" 
 							v-if="input.name === 'git_profile'">
@@ -57,16 +57,19 @@
 								<br/>
 								<span>SEARCHING</span>
 							</div>
+							<div id="githubValidationError" v-show="github.showValidationError">
+								<span>Please use the search box above to find your username and select your profile to continue</span>
+								<input type="button" value="OK" @click="github.showValidationError = false"/>
+							</div>
 						</div>	
 
-						<button v-show="github.selectedId !== null || formFields[index][0].name !== 'git_profile'" type="submit" class="btn btn-success next-button">
+						<button type="submit" class="btn btn-success next-button">
 							<i v-if="formFields[index][0].name !== 'summary'" class="fas fa-chevron-right"></i>
 							<div v-else>FINISH</div>
 						</button>
 						<button v-show="index !== 0" @click.prevent="prevPage()" class="btn btn-info prev-button">
 							<i class="fas fa-chevron-left"></i>
-						</button>
-						
+						</button>						
 					</form>					
 				</div>
 				<br/>				
@@ -76,80 +79,86 @@
 </template>
 
 <script>
-	import formFields from "@/data/form-fields"
-	import axios from "axios"
-	export default {
-		data() {
-			return {
-				formFields,
-				currentPage: 0,
-				submittedData: {
-					first_name: "",
-					last_name: "",
-					email: "",
-					phone_number: "",
-					live_in_uk: false,
-					git_profile: "",
-					cv: "",
-					cover_letter: "",
-					about_you: ""					
-				},
-				github: {
-					searchTerm: '',	
-					response: {},
-					apiProtect: null,
-					selectedId: null,
-					searching: false
-				}	
-				
-				
+
+import formFields from "@/data/form-fields"
+import axios from "axios"
+export default {
+	data() {
+		return {
+			formFields,
+			currentPage: 0,
+			submittedData: {
+				first_name: "",
+				last_name: "",
+				email: "",
+				phone_number: "",
+				live_in_uk: false,
+				git_profile: "",
+				cv: "",
+				cover_letter: "",
+				about_you: ""					
+			},
+			github: {
+				searchTerm: '',	
+				response: {},
+				apiProtect: null,
+				selectedId: null,
+				searching: false,
+				showValidationError: false
+			},			
+		}
+	},		
+	methods: {
+		pagePosition(index) {
+			let pageClass = ''
+			if(index === this.currentPage) {
+				pageClass = 'active'
+			} else if (index < this.currentPage) {
+				pageClass = 'prev' 
+			} else if (index > this.currentPage) {
+				pageClass = 'next'
 			}
-		},		
- 		methods: {
- 			pagePosition(index) {
- 				let pageClass = ''
-				if(index === this.currentPage) {
-					pageClass = 'active'
-				} else if (index < this.currentPage) {
-					pageClass = 'prev' 
-				} else if (index > this.currentPage) {
-					pageClass = 'next'
-				}
-				return pageClass
- 			},
-    		nextPage() {
-      			if (this.currentPage < formFields.length - 1) {
-      				this.currentPage++	
-      			}    
-    		},
-    		prevPage() {
-      			if (this.currentPage !== 0) {
-        			this.currentPage--
-      			}   
-    		},
-    		searchGithub(searchTerm) {
-    			var self = this
-    			clearTimeout(this.github.apiProtect)
-    			if (searchTerm.target.value !== "") {
-    				this.github.searching = true	
-    			} else {
-    				this.github.searching = false	
-    			}
-    			self.github.response = []
-       			this.github.apiProtect = setTimeout(function() {    				
-    				axios.get('https://api.github.com/search/users?q=' + searchTerm.target.value)
-    					.then(response => {    						
-    						self.github.response = response.data.items
-    						self.github.searching = false    						
-    					})
-    			}, 1000)   			
-    		},
-    		saveGithubProfile(id, url) {
-    			this.github.selectedId = id
-    			this.submittedData.git_profile = url
-    		}
+			return pageClass
+		},
+		nextPage() {
+			if (this.github.selectedId === null && formFields[this.currentPage][0].name === 'git_profile') {
+				this.github.showValidationError = true
+			} else if (this.currentPage < formFields.length - 1) {
+				this.currentPage++	
+			}    
+		},
+		prevPage() {
+			if (this.currentPage !== 0) {
+				this.currentPage--
+			}   
+		},
+		searchGithub(searchTerm) {
+			var self = this
+			clearTimeout(this.github.apiProtect)
+			if (searchTerm.target.value !== "") {
+				this.github.searching = true	
+			} else {
+				this.github.searching = false	
+			}
+			self.github.response = []
+			this.github.apiProtect = setTimeout(function() {    				
+			axios.get('https://api.github.com/search/users?q=' + searchTerm.target.value)
+				.then(response => {    						
+					self.github.response = response.data.items
+					self.github.searching = false    						
+				})
+			}, 1000)   			
+		},
+		saveGithubProfile(id, url) {
+			this.github.selectedId = id
+			this.submittedData.git_profile = url
+		},
+		hideGithubError() {
+			console.log("GOT hERE")
+			this.github.showValidationError=false
 		}
 	}
+}
 </script>
 
 <style scoped>
@@ -168,7 +177,7 @@
 		animation-iteration-count: infinite;
 		animation-timing-function: linear;
 	}
-	.please-wait {
+	.please-wait, #githubValidationError {
 		background-color: rgba(0,0,0,0.4);
 		color: white;
 		display: flex;
@@ -176,6 +185,9 @@
 		justify-content: center;
 		height: 100%;
 		flex-direction: column;
+	}
+	#githubValidationError {
+		z-index: 3;
 	}
 	.form-container {
 		border: solid 2px grey;
