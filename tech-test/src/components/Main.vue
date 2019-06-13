@@ -2,12 +2,14 @@
 	<section id="form-page-container">
         <b-container>      
           	<b-row>
-				<div class="form-container">					
+				<div class="form-container">	
+				<!--Create a form for each page and utilise HTML5 form submission validation -->				
 					<form 
 						@submit.prevent="nextPage()" v-for="(page, index) in formFields" :class="pagePosition(index)" class="page">						
+						<!--Create a title and subtitle for each page-->
 						<div class="page-title">{{ page.title }}</div>
 						<div class="page-description">{{ page.description }}</div>
-						
+						<!--Loop through the data and draw input boxes with their corresponding properties-->
 						<b-input-group v-for="input in page.data" :class="page.name === 'about-you' ? 'full-height' : ''">
 							<label v-show="page.name !== 'summary'" class="input-label">{{ input.label }}</label>
 							<span class="required-identifier" v-show="input.required">*</span>
@@ -21,13 +23,15 @@
 								:required="input.required" 
 								class="form-control tech-input" 
 								:pattern="input.pattern"
-								:title="input.title" />			
+								:title="input.title" />	
+							<!--Create a text area for the about you page-->		
 							<textarea
 								v-show="page.name === 'about-you'"
 								v-model="submittedData[input.name]"
 								:name="input.name" 
 								:required="input.required" 
-								class="form-control tech-input"></textarea>					
+								class="form-control tech-input"></textarea>		
+							<!--Create a final summary page before submitting the data-->			
 							<div v-show="page.name === 'summary'" id="final-summary">
 								<div class="summary-item">
 									<span class="summary-label">Name: </span>
@@ -63,7 +67,7 @@
 								</div>
 							</div>					
 						</b-input-group>		
-						
+						<!--Show the results of the github search-->
 						<div id="githubResults" v-if="page.name === 'git_profile'">
 							<div v-for="result in github.response" class="row github-hit" @click="saveGithubProfile(result.id, result.html_url)"
 								:class="github.selectedId === result.id ? 'selected' : ''">
@@ -75,15 +79,16 @@
 									<div class="html-url">{{ result.html_url }}</div>
 								</b-col>
 							</div>
+							<!--Give user feedback if a search hasn't happened or has failed-->
 							<div class="searchMessage" v-show="github.searching === false && github.showValidationError === false">
 								<span v-if="github.response.length === 0 && github.searchTerm !== ''">
 									Unfortunately, the username specified did not return any results
 								</span>
 								<span v-else-if="github.searchTerm === ''">
 									Please use the search box to find your profile by typing in your username	
-								</span>
-																
+								</span>																
 							</div>			
+							<!--Show activity when searching git hub-->
 							<div class="please-wait" v-show="github.searching === true">
 								<i class="rotate fas fa-spinner"></i>
 								<br/>
@@ -94,7 +99,7 @@
 								<input type="button" value="OK" @click="hideGithubMessage()"/>
 							</div>
 						</div>	
-
+						<!--Back and next buttons on each page-->
 						<button type="submit" class="btn btn-success next-button" @click="page.name === 'summary' ? submitData() : ''">
 							<i v-if="page.name !== 'summary'" class="fas fa-chevron-right"></i>
 							<div v-else>FINISH</div>
@@ -102,8 +107,8 @@
 						<button v-show="index !== 0" @click.prevent="prevPage()" class="btn btn-info prev-button">
 							<i class="fas fa-chevron-left"></i>
 						</button>		
-
 					</form>			
+					<!--Final page showing either success or failure of submission-->
 					<div id="final" v-show="finished">
 						<div class="finalMessage" v-show="finalise.dataSending">
 							<i class="rotate fas fa-spinner"></i>
@@ -168,6 +173,7 @@ export default {
 	},
 	methods: {
 		pagePosition(index) {
+			//dictates which page is being shown
 			let pageClass = ''
 			if(index === this.currentPage) {
 				pageClass = 'active'
@@ -179,6 +185,7 @@ export default {
 			return pageClass
 		},
 		nextPage() {
+			//Move onto the next page if all validation has passed
 			if (this.submittedData.git_profile === '' && formFields[this.currentPage].name === 'git_profile') {
 				this.github.showValidationError = true
 				this.selectedId === null
@@ -187,11 +194,13 @@ export default {
 			}    
 		},
 		prevPage() {
+			//Move to the previous page
 			if (this.currentPage !== 0) {
 				this.currentPage--
 			}   
 		},
 		searchGithub(searchTerm) {
+			//Search github after 1 second of idle time from inputting
 			let self = this
 			clearTimeout(this.github.apiProtect)			
 			this.github.searchTerm = searchTerm.target.value 
@@ -211,15 +220,17 @@ export default {
 			}, 1000)   			
 		},
 		hideGithubMessage() {
+			//clear error messages
 			this.github.showValidationError = false
 			this.github.selectedId = null
 		},
 		saveGithubProfile(id, url) {
+			//Store the saved github profile
 			this.github.selectedId = id
 			this.submittedData.git_profile = url
 		},
-	
 		submitData() {
+			//Send the data to Netsells
 			let self = this
 			this.finished = true
 			this.finalise.dataSending = true
