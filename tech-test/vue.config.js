@@ -2,7 +2,7 @@ module.exports = {
     css: {
        sourceMap: true,
     },
-    baseUrl: '/',
+    publicPath: '/',
     outputDir: 'dist',
     lintOnSave: false,
     pages: {
