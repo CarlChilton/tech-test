@@ -1,0 +1,220 @@
+@keyframes spin {
+	from {transform: rotate(0deg);}
+	to {transform: rotate(360deg);}
+}
+#form-page-container {
+	background-color: #285984;
+	height: calc(100vh - 60px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow-y: scroll;
+	i.rotate {
+		font-size: 30px;
+		animation-name: spin;
+		animation-duration: 1s;
+		animation-iteration-count: infinite;
+		animation-timing-function: linear;
+	}
+	.form-container {
+		border: solid 2px #152e44;
+		position: relative;
+		height: 60vh;
+		min-height: 500px;
+		width: 100%;
+		overflow: hidden;
+		max-width: 500px;
+		margin: 0 auto;		
+		background-color: white;
+		.page-title {
+			width: 100%;
+			text-align: center;
+			padding: 5px;
+			background-color: #152e44;
+			color: white;
+		}
+		.page-description {
+			width: 100%;
+			text-align: center;
+			font-size: 14px;
+			padding: 3px;
+			background-color: #285984;
+			border-bottom: solid 2px #152e44;
+			color: white;
+			margin-bottom: 20px;
+		}
+		.page {		
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			transition: left 0.6s ease-out, opacity 0.3s linear;
+			transition-delay: 0.3s;
+			&.prev {
+				left: -100%;
+				opacity: 0;
+			}
+			&.next {
+				left: 100%;
+				opacity: 0;
+			}
+			&.active {
+				left: 0;
+				opacity: 1;
+			}
+		}
+		.buttons-container {
+			padding: 0 15px;
+			position: absolute;
+			width: 100%;
+			bottom: 10px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+		.prev-button {
+			position: absolute;
+			left: 15px;
+			bottom: 15px;
+			z-index: 1;
+		}
+		.next-button {
+			position: absolute;
+			right: 15px;
+			bottom: 15px;
+			z-index: 1;
+		}
+		textarea.tech-input {
+			resize: none;
+		}
+		.tech-input {
+			margin: 15px 0;
+			background-color: transparent;
+			padding: 10px;
+			border: solid 2px #285984;
+			color: #285984;
+			border-radius: 0;
+			&[type="file"] {
+				height: 55px;
+				margin-bottom: 40px;
+			}
+			&[name="about_you"] {
+				height: calc(100% - 30px);
+				word-break: break-word;
+			}
+		}
+		.input-label {
+			position: absolute;
+			top: -4px;
+			left: 5px;
+			font-size: 12px;
+		}
+		#githubResults {
+			overflow-y: scroll;
+			overflow-x: hidden;
+			height: calc(100% - 220px);
+			margin: 0 15px;
+			border: solid 2px #152e44;
+			.searchMessage {
+				padding: 20px;
+				font-size: 13px;
+				text-align: center;
+			}
+			.github-hit {
+				padding: 10px;
+				border-bottom: solid 1px #152e44;
+				cursor: pointer;
+				transition: background-color 0.2s ease-out;
+				.github-avatar {
+					width: 100%;
+					border-radius: 50%;
+					box-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+				}
+
+				.login-name {
+					text-align: left;
+					font-weight: bold;
+				}
+				.html-url {
+					font-size: 12px;
+					text-align: left;
+				}
+				&:hover {
+					background-color: #eee;
+				}
+				&.selected {
+					color: white;
+					background-color: green;
+				}
+			}
+			.please-wait, #githubValidationError {
+				background-color: #285984;
+				color: white;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				height: 100%;
+				flex-direction: column;
+			}
+			#githubValidationError {
+				z-index: 3;				
+				.validationErrorMessage {
+					padding: 20px;
+					text-align: center;
+				}
+			}
+		}
+		#final {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			z-index: 3;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background-color: white;
+			.finalMessage {
+				flex-direction: column;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-direction: column;
+			}
+		}
+		.input-group {
+			margin: 0 15px;
+			width: calc(100% - 30px);	
+			.required-identifier {
+				color: orange;
+				font-size: 22px;
+				position: absolute;
+				left: -4px;
+				top: -7px;
+			}		
+			#final-summary {
+				margin-top: 20px;
+				width: 100%;
+				.summary-label {
+					font-weight: bold;
+					padding-left: 5px;
+					width: 40%;
+					font-size: 14px;
+					display: inline-block;
+				}
+				.summary-item {
+					margin-bottom: 10px;
+				}
+				.summary-value {
+					font-size: 14px;
+				}
+			}
+			&.full-height {
+				height: calc(100% - 150px);
+			}	 
+		}
+	}	
+}
+
+
+
+

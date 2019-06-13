@@ -1,15 +1,18 @@
 <template>
-	<section>
+	<section id="form-page-container">
         <b-container>      
           	<b-row>
-				<div class="form-container">
+				<div class="form-container">					
 					<form 
 						@submit.prevent="nextPage()" v-for="(page, index) in formFields" :class="pagePosition(index)" class="page">						
 						<div class="page-title">{{ page.title }}</div>
 						<div class="page-description">{{ page.description }}</div>
-
-						<b-input-group v-for="input in page.data">
-							<input 
+						
+						<b-input-group v-for="input in page.data" :class="page.name === 'about-you' ? 'full-height' : ''">
+							<label v-show="page.name !== 'summary'" class="input-label">{{ input.label }}</label>
+							<span class="required-identifier" v-show="input.required">*</span>
+							<input
+								v-if="page.name !== 'about-you'" 
 								v-show="page.name !== 'summary'"
 								@keyup="page.name === 'git_profile' ? searchGithub($event) : ''" 
 								v-model="submittedData[input.name]"  
@@ -17,18 +20,47 @@
 								:type="input.type" 
 								:required="input.required" 
 								class="form-control tech-input" 
-								:placeholder="input.label" 
 								:pattern="input.pattern"
-								:title="input.title" /> 	
-							<div v-show="page.name === 'summary'">
-								<div>Name: {{ submittedData.first_name }} {{ submittedData.last_name }}</div>
-								<div>Email: {{ submittedData.email }}</div>
-								<div>Phone: {{ submittedData.phone_number }}</div>
-								<div>Live in the uk: {{ submittedData.live_in_uk }}</div>
-								<div>Git Profile: {{ submittedData.git_profile }}</div>
-								<div>CV attached: {{ submittedData.cv }}</div>
-								<div>Cover letter attached: {{ submittedData.cover_letter }}</div>
-								<div>About you: {{ submittedData.about_you }}</div>
+								:title="input.title" />			
+							<textarea
+								v-show="page.name === 'about-you'"
+								v-model="submittedData[input.name]"
+								:name="input.name" 
+								:required="input.required" 
+								class="form-control tech-input"></textarea>					
+							<div v-show="page.name === 'summary'" id="final-summary">
+								<div class="summary-item">
+									<span class="summary-label">Name: </span>
+									<span class="summary-value">{{ submittedData.first_name }} {{ submittedData.last_name }}</span>
+								</div>
+								<div class="summary-item">
+									<span class="summary-label">Email: </span>
+									<span class="summary-value">{{ submittedData.email }}</span>
+								</div>
+								<div class="summary-item">
+									<span class="summary-label">Phone: </span>
+									<span class="summary-value">{{ submittedData.phone_number }}</span>
+								</div>
+								<div class="summary-item">
+									<span class="summary-label">Live in the uk: </span>
+									<span class="summary-value">{{ submittedData.live_in_uk }}</span>
+								</div>
+								<div class="summary-item">
+									<span class="summary-label">Git Profile: </span>
+									<span class="summary-value">{{ submittedData.git_profile }}</span>
+								</div>
+								<div class="summary-item">
+									<span class="summary-label">CV attached: </span>
+									<span class="summary-value">{{ submittedData.cv }}</span>
+								</div>
+								<div class="summary-item">
+									<span class="summary-label">Cover letter attached: </span>
+									<span class="summary-value">{{ submittedData.cover_letter }}</span>
+								</div>
+								<div class="summary-item">
+									<span class="summary-label">About you: </span>
+									<span class="summary-value">{{ submittedData.about_you }}</span>
+								</div>
 							</div>					
 						</b-input-group>		
 						
@@ -58,8 +90,8 @@
 								<span>SEARCHING</span>
 							</div>
 							<div id="githubValidationError" v-show="github.showValidationError">
-								<span>Please use the search box above to find your username and select your profile to continue</span>
-								<input type="button" value="OK" @click="github.showValidationError = false"/>
+								<span class="validationErrorMessage">Please use the search box above to find your username and select your profile to continue</span>
+								<input type="button" value="OK" @click="hideGithubMessage()"/>
 							</div>
 						</div>	
 
@@ -75,6 +107,7 @@
 					<div id="final" v-show="finished">
 						<div class="finalMessage" v-show="finalise.dataSending">
 							<i class="rotate fas fa-spinner"></i>
+							<br/>
 							<span>THANK YOU!</span>						
 							<span>Please wait while your information is submitted</span>
 						</div>
@@ -146,8 +179,9 @@ export default {
 			return pageClass
 		},
 		nextPage() {
-			if (this.github.selectedId === null && formFields[this.currentPage].name === 'git_profile') {
+			if (this.submittedData.git_profile === '' && formFields[this.currentPage].name === 'git_profile') {
 				this.github.showValidationError = true
+				this.selectedId === null
 			} else if (this.currentPage < formFields.length - 1) {
 				this.currentPage++	
 			}    
@@ -158,12 +192,12 @@ export default {
 			}   
 		},
 		searchGithub(searchTerm) {
-			var self = this
-			clearTimeout(this.github.apiProtect)
-			this.github.showValidationError = false
+			let self = this
+			clearTimeout(this.github.apiProtect)			
 			this.github.searchTerm = searchTerm.target.value 
 			if (searchTerm.target.value !== "") {
 				this.github.searching = true	
+				this.github.showValidationError = false
 			} else {
 				this.github.searching = false	
 			}
@@ -176,151 +210,32 @@ export default {
 				})
 			}, 1000)   			
 		},
+		hideGithubMessage() {
+			this.github.showValidationError = false
+			this.github.selectedId = null
+		},
 		saveGithubProfile(id, url) {
 			this.github.selectedId = id
 			this.submittedData.git_profile = url
 		},
 	
 		submitData() {
+			let self = this
 			this.finished = true
 			this.finalise.dataSending = true
-			
+			axios({
+				method: "POST", 
+				url: "https://recruitment-submissions.netsells.co.uk/api/vacancies/javascript-developer/submissions/",
+				headers: {'X-Requested-With': 'XMLHttpRequest'},
+				data: self.submittedData})
+				.then(response => {    						
+					console.log(response)   						
+				})			  						
 		}
 	}
 }
 </script>
 
-<style scoped>
-	
-	#final {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		z-index: 3;
-		border-radius: 5px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background-color: rgba(255,255,255,0.7);
-	}
-	.finalMessage {
-		flex-direction: column;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-direction: column;
-	}
-	.searchMessage {
-		padding: 20px;
-	}
-	@keyframes spin {
-		from {transform: rotate(0deg);}
-		to {transform: rotate(360deg);}
-	}
-	i.rotate {
-		font-size: 30px;
-		animation-name: spin;
-		animation-duration: 1s;
-		animation-iteration-count: infinite;
-		animation-timing-function: linear;
-	}
-	.please-wait, #githubValidationError {
-		background-color: rgba(0,0,0,0.4);
-		color: white;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 100%;
-		flex-direction: column;
-	}
-	#githubValidationError {
-		z-index: 3;
-	}
-	.form-container {
-		border: solid 2px grey;
-		border-radius: 10px;
-		position: relative;
-		height: 60vh;
-		width: 100%;
-		overflow: hidden;
-		max-width: 500px;
-		margin: 0 auto;		
-	}
-	.form-container .page {
-		margin: 15px;
-		position: absolute;
-		width: calc(100% - 30px);
-		height: 100%;
-		top: 0;
-		transition: left 0.6s ease-out, opacity 0.3s linear;
-		transition-delay: 0.3s;
-	}
-	.form-container .page.prev {
-		left: -100%;
-		opacity: 0;
-	}
-	.form-container .page.next {
-		left: 100%;
-		opacity: 0;
-	}
-	.form-container .page.active {
-		left: 0;
-		opacity: 1;
-	}
-	.form-container .buttons-container {
-		padding: 0 15px;
-		position: absolute;
-		width: 100%;
-		bottom: 10px;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-	.form-container .prev-button {
-		position: absolute;
-		left: 0;
-		bottom: 25px;
-		z-index: 1;
-	}
-	.form-container .next-button {
-		position: absolute;
-		right: 0;
-		bottom: 25px;
-		z-index: 1;
-	}
-
-	.github-avatar {
-		width: 100%;
-		border-radius: 50%;
-		box-shadow: 1px 1px 2px rgba(0,0,0,0.4);
-	}
-
-	.login-name {
-		text-align: left;
-		font-weight: bold;
-	}
-	.html-url {
-		font-size: 12px;
-		text-align: left;
-	}
-	.github-hit {
-		padding: 10px;
-		border-bottom: solid 1px lightgrey;
-		cursor: pointer;
-		transition: background-color 0.2s ease-out;
-	}
-	.github-hit:hover {
-		background-color: #eee;
-	}
-	#githubResults {
-		overflow-y: scroll;
-		overflow-x: hidden;
-		height: calc(100% - 140px);
-		margin-top: 20px;
-		border: solid 2px grey;
-	}
-	.github-hit.selected {
-		color: white;
-		background-color: green;
-	}
+<style lang="scss" scoped>
+	@import "@/assets/css/main.scss"
 </style>

@@ -1,6 +1,6 @@
 export default [
     {   
-        name: "about-you",
+        name: "your-details",
         title: "About you", 
         description: "Let us know who you are and how to contact you",
         data: [
@@ -35,9 +35,8 @@ export default [
                 element: "input",
                 name: "phone_number",
                 label: "Phone number",
-                type: "number",
+                type: "tel",
                 required: false,
-                pattern: "^[0-9]",
                 dataTarget: "phone_number"
             },        
             {
@@ -83,7 +82,7 @@ export default [
                 name: "cover_letter",
                 label: "Upload Cover Letter",
                 type: "file", 
-                required: false,
+                required: true,
             }
         ]
     },
@@ -105,7 +104,7 @@ export default [
     {   
         name: "summary",
         title: "Almost there", 
-        description: "Please check the details you have submitted below. Once you're happy, click FINISH",
+        description: "Please check your details below. If you're happy, click FINISH",
         data: [
             {
                 element: "div", 
