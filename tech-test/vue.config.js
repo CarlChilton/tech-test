@@ -1,3 +1,5 @@
 module.exports = {
-  publicPath: "/tech-test/"
+  	presets: [
+    	'@vue/app'
+  	]
 }
