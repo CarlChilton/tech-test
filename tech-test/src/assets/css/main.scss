@@ -26,6 +26,12 @@
 		max-width: 500px;
 		margin: 0 auto;		
 		background-color: white;
+		.remaining-characters {
+			position: absolute;
+			top: -6px;
+			right: 0;
+			font-size: 12px;
+		}
 		.page-title {
 			width: 100%;
 			text-align: center;
@@ -86,6 +92,21 @@
 		}
 		textarea.tech-input {
 			resize: none;
+		}
+		#textareaValidationMessage {
+			position: absolute;
+			background-color: #285984;
+			color: white;
+			display: flex;
+			align-items: center;
+			top: 17px;
+			justify-content: center;
+			height: calc(100% - 20px);
+			flex-direction: column;
+			.validationErrorMessage {
+				text-align: center;
+				padding: 20px;
+			}
 		}
 		.tech-input {
 			margin: 15px 0;
@@ -179,6 +200,13 @@
 				align-items: center;
 				justify-content: center;
 				flex-direction: column;
+			}
+			.response-message {
+				font-weight: bold;
+			}
+			.response-description {
+				padding: 20px;
+				text-align: center;
 			}
 		}
 		.input-group {

@@ -17,6 +17,7 @@
 								v-if="page.name !== 'about-you'" 
 								v-show="page.name !== 'summary'"
 								@keyup="page.name === 'git_profile' ? searchGithub($event) : ''" 
+								:class="input.name === 'cv' ? 'input-cv' : input.name === 'cover_letter' ? 'input-cover-letter' : ''"
 								v-model="submittedData[input.name]"  
 								:name="input.name" 
 								:type="input.type" 
@@ -24,13 +25,21 @@
 								class="form-control tech-input" 
 								:pattern="input.pattern"
 								:title="input.title" />	
-							<!--Create a text area for the about you page-->		
+							<!--Create a text area for the about you page-->
+							<div class="remaining-characters" v-if="page.name === 'about-you'">Remaining chars: {{ remainingChars }}</div>				
 							<textarea
+								id="about-you-textarea"
+								@keyup="countdown()"
 								v-show="page.name === 'about-you'"
 								v-model="submittedData[input.name]"
 								:name="input.name" 
 								:required="input.required" 
 								class="form-control tech-input"></textarea>		
+							<!--Validation popup for the textarea-->
+							<div id="textareaValidationMessage" v-show="showTextareaMessage">
+								<span class="validationErrorMessage">You need to have at least 100 characters in this form to continue. You have {{ remainingChars }} remaining.</span>
+								<input type="button" value="OK" @click="hideTextareaMessage()"/>
+							</div>
 							<!--Create a final summary page before submitting the data-->			
 							<div v-show="page.name === 'summary'" id="final-summary">
 								<div class="summary-item">
@@ -117,8 +126,8 @@
 							<span>Please wait while your information is submitted</span>
 						</div>
 						<div class="finalMessage" v-show="finalise.dataSubmitted">
-							<span>{{ response.message }}</span>
-							<span>{{ response.description }}</span>
+							<span class="response-message">{{ response.message }}</span>
+							<span class="response-description">{{ response.description }}</span>
 						</div>
 					</div>
 				</div>
@@ -145,8 +154,8 @@ export default {
 				phone_number: "",
 				live_in_uk: false,
 				git_profile: "",
-				cv: "",
-				cover_letter: "",
+				cv: null,
+				cover_letter: null,
 				about_you: ""					
 			},
 			github: {
@@ -165,13 +174,24 @@ export default {
 			response: {
 				message: '',
 				description: ''
-			}
+			},
+			showTextareaMessage: false,
+			remainingChars: 100
 		}
 	},		
 	mounted() {
 		this.dataReady = true
 	},
 	methods: {
+		countdown() {
+			console.log(this.submittedData.about_you.length)
+			if(this.remainingChars > 0) {
+				this.remainingChars = 100 - this.submittedData.about_you.length
+			} else {
+				this.remainingChars = 0;
+			}
+			
+		},
 		pagePosition(index) {
 			//dictates which page is being shown
 			let pageClass = ''
@@ -186,9 +206,11 @@ export default {
 		},
 		nextPage() {
 			//Move onto the next page if all validation has passed
-			if (this.submittedData.git_profile === '' && formFields[this.currentPage].name === 'git_profile') {
+			if (this.github.selectedId === null && formFields[this.currentPage].name === 'git_profile') {
 				this.github.showValidationError = true
-				this.selectedId === null
+			} else if (formFields[this.currentPage].name === 'about-you' && $("#about-you-textarea").val().length < 100) {
+				console.log($("#about-you-textarea").val().length)
+				this.showTextareaMessage = true
 			} else if (this.currentPage < formFields.length - 1) {
 				this.currentPage++	
 			}    
@@ -224,24 +246,72 @@ export default {
 			this.github.showValidationError = false
 			this.github.selectedId = null
 		},
+		hideTextareaMessage() {
+			this.showTextareaMessage = false
+		},
 		saveGithubProfile(id, url) {
 			//Store the saved github profile
 			this.github.selectedId = id
 			this.submittedData.git_profile = url
-		},
+		},		
 		submitData() {
 			//Send the data to Netsells
+			function b64toBlob(b64Data, contentType, sliceSize) {
+		        contentType = contentType || '';
+		        sliceSize = sliceSize || 512;
+
+		        var byteCharacters = atob(b64Data);
+		        var byteArrays = [];
+
+		        for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+		            var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+		            var byteNumbers = new Array(slice.length);
+		            for (var i = 0; i < slice.length; i++) {
+		                byteNumbers[i] = slice.charCodeAt(i);
+		            }
+		            var byteArray = new Uint8Array(byteNumbers);
+		            byteArrays.push(byteArray);
+		        }
+	      		var blob = new Blob(byteArrays, {type: contentType});
+	      		return blob;
+			}
+
+			var dataToSend = new FormData(this.submittedData)
+			
+			for (let field in this.submittedData) {
+				dataToSend.append(field, this.submittedData[field])
+			}
+
 			let self = this
+
 			this.finished = true
-			this.finalise.dataSending = true
-			axios({
-				method: "POST", 
-				url: "https://recruitment-submissions.netsells.co.uk/api/vacancies/javascript-developer/submissions/",
+			this.finalise.dataSending = true			
+
+			var cv = $(".input-cv")[0]["files"][0]	
+			dataToSend.append("cv", $(".input-cv")[0]["files"][0])
+			dataToSend.append("cover_letter", $(".input-cover-letter")[0]["files"][0])
+
+			$.ajax({
+				type: "POST",
+				url: "https://recruitment-submissions.netsells.co.uk/api/vacancies/javascript-developer/submissions",
 				headers: {'X-Requested-With': 'XMLHttpRequest'},
-				data: self.submittedData})
-				.then(response => {    						
-					console.log(response)   						
-				})			  						
+				data: dataToSend,
+				processData: false, 
+				contentType: false,
+				success: function(response) {
+					self.finalise.dataSending = false
+					self.finalise.dataSubmitted = true
+					self.response.message = "Thank you"
+					self.response.description = "Your details have been successfully submitted and sent over to the team"
+				},
+				error: function(response) {
+					self.finalise.dataSending = false
+					self.finalise.dataSubmitted = true
+					self.response.message = "Whoops!"
+					self.response.description = "Unfortunately, there was an error and the details were not submitted, please refresh the page and try again"	
+				}
+			})				
 		}
 	}
 }
