@@ -208,8 +208,7 @@ export default {
 			//Move onto the next page if all validation has passed
 			if (this.github.selectedId === null && formFields[this.currentPage].name === 'git_profile') {
 				this.github.showValidationError = true
-			} else if (formFields[this.currentPage].name === 'about-you' && $("#about-you-textarea").val().length < 100) {
-				console.log($("#about-you-textarea").val().length)
+			} else if (formFields[this.currentPage].name === 'about-you' && this.remainingChars > 0) {			
 				this.showTextareaMessage = true
 			} else if (this.currentPage < formFields.length - 1) {
 				this.currentPage++	
