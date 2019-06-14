@@ -1,5 +1,9 @@
 # tech-test
 
+## Overview
+
+I currently predominantly use JQuery or Flask to manipulate the DOM. Following your code standards, I noted that you specify NOT to use JQuery and to use Vue.js as required. I felt compelled to learn this framework and apply it to this test in order to follow these guidelines. 
+
 ## Project setup
 ```
 npm install
