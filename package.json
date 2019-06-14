@@ -2,11 +2,13 @@
   "name": "tech-test",
   "version": "0.1.0",
   "private": true,
+  "wst": "/dist/",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "test:unit": "vue-cli-service test:unit"
+    "test:unit": "vue-cli-service test:unit",
+    "deploy": "node ./node_modules/vue-gh-pages/index.js"
   },
   "dependencies": {
     "axios": "^0.19.0",
@@ -15,6 +17,7 @@
     "core-js": "^2.6.5",
     "vue": "^2.6.10"
   },
+  "homepage": "https://github.com/CarlChilton/tech-test",
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.8.0",
     "@vue/cli-plugin-eslint": "^3.8.0",
